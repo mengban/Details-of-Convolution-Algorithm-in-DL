@@ -121,6 +121,13 @@ long2015fully,radford2015unsupervised,visin15,im2016generating}。
           小之间的关系以更加直观的理解方式呈现出来。
 \end{enumerate}
 
+为了保证应用的广泛性，本指南所展示的实验结果独立于具体实现细节，并且适用于所有通用的机
+器学习框架图Theano\citep{bergstra2010theano,bastien2012theano},
+Torch \citep{collobert2011torch7},
+Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
+
+本章简要回顾了卷积神经网络的主要构成模块，即离散卷积和pooling。欲更加深入了解该相关课题，
+可以参看深度学习经典教材<<Deep learning>>的第九章\citep{Goodfellow-et-al-2016-Book}。
 
 Convolutional neural networks therefore constitute a very useful tool for
 machine learning practitioners. However, learning to use CNNs for the first time
@@ -157,7 +164,28 @@ This chapter briefly reviews the main building blocks of CNNs, namely discrete
 convolutions and pooling. For an in-depth treatment of the subject, see Chapter
 9 of the Deep Learning textbook \citep{Goodfellow-et-al-2016-Book}.
 
-\section{Discrete convolutions}
+\section{离散卷积}
+神经网络的基本功能是进行\emph{仿射变换(affine transformations)}:接收一个向量作为输入并将其与矩阵进行相
+乘以产生输出(在将输出进行非线性映射之前，都会给将其加上一个偏置向量)。输入可以是任意类型的，
+可以是一张图片，可以是一段声音，可以是无序的特征片段，在进行输入之前这些数据总可以被表示成向量。
+
+图片、声音片段以及其他类似数据类型都有内在结构，更准确的说，他们都具有以下属性:
+
+\begin{itemize}
+    \item 它们都以多维数组的形式进行存储。
+    \item 它们具有一个或多个轴，并且每个轴上的数据的顺序很重要。(如图片的长度和高度、声音片段的时间
+          等)。
+    \item 一个轴被称作通道轴，用于访问数据的不同视图。(彩色图片的 R、G、B通道，立体声轨的左右通道)。
+\end{itemize}
+
+当对数据进行仿射变换时这些特征并没有利用到。实际上，所有轴上的数据都以相同的处理方式对待，像拓扑信息
+这些并没有被考虑进去。因此，如果利用数据的这种隐含的结构可能会为解决譬如计算机视觉、语音识别等问题提
+供方便，在这种情况下，数据的拓扑信息最好被保留下来。基于此，离散卷积应运而生。
+
+离散卷积是一种保留了数据顺序信息的线性运算。它是稀疏的(只有少数的输入单元参与给定的输出单元的计算)。
+它是参数重用的(相同的权重参数被输入的多个位置重用)。
+
+
 
 The bread and butter of neural networks is \emph{affine transformations}: a
 vector is received as input and is multiplied with a matrix to produce an
@@ -190,6 +218,13 @@ A discrete convolution is a linear transformation that preserves this notion of
 ordering. It is sparse (only a few input units contribute to a given output
 unit) and reuses parameters (the same weights are applied to multiple locations
 in the input).
+
+\autoref{fig:numerical_no_padding_no_strides} 提供了一个离散卷积的例子，淡蓝色网格被称作
+{\em 输入特征图(input feature map)}. 为了绘图方便，图示只展示了单个的输入特征图，但是多
+个特征图堆叠的例子也是很常见的\footnote{%
+    相关例子见前面所提到的图片和声音片段的{\em 通道(channels)\/}。}
+一个带有参数的 {\em 卷积核(kernel)\/} (阴影区域)在输入的特征图上滑动。在每一个位置上，卷积核和输入
+特征图重叠的每个元素分别进行相乘，并将相乘的结果进行求和作为当前对应位置的输出。
 
 \autoref{fig:numerical_no_padding_no_strides} provides an example of a discrete
 convolution. The light blue grid is called the {\em input feature map}. To keep
