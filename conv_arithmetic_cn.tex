@@ -4,6 +4,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage[utf8]{inputenc}
+\usepackage[UTF8]{ctex}
 \usepackage[framemethod=tikz]{mdframed}
 \usepackage{natbib}
 \usepackage{subcaption}
@@ -51,7 +52,7 @@
 \let\@fnsymbol\@arabic
 \makeatother
 
-\title{A guide to convolution arithmetic for deep learning}
+\title{深度学习卷积算法指南}
 \author[$\bigstar$]{Vincent Dumoulin\thanks{dumouliv@iro.umontreal.ca}}
 \author[$\bigstar\dagger$]{Francesco Visin\thanks{francesco.visin@polimi.it}}
 \affil[$\bigstar$]{MILA, Universit\'{e} de Montr\'{e}al}
@@ -99,14 +100,27 @@
 
 \tableofcontents
 
-\chapter{Introduction}
+\chapter{简介}
 
-Deep convolutional neural networks (CNNs) have been at the heart of spectacular
-advances in deep learning. Although CNNs have been used as early as the nineties
-to solve character recognition tasks \citep{le1997reading}, their current
-widespread application is due to much more recent work, when a deep CNN was used
-to beat state-of-the-art in the ImageNet image classification challenge
-\citep{krizhevsky2012imagenet}.
+深度卷积神经网络（CNN）一直是深度学习取得巨大进步的核心。 虽然CNN最早在九十年代被用于解决字符识别任务
+\citep{le1997reading}, 但是他们目前的广泛的应用却是由于近年来的一些工作:在2012年的ImageNet图像分类
+挑战中一个深度神经网络模型击败了当时的最好的方案\citep{krizhevsky2012imagenet}。
+
+因此卷积神经网络构成了一个对于机器学习学习者的一个非常有用的工具。然而第一次学习使用卷积通常都是整个人
+都是懵逼的状态。卷积层的输出大小受输入大小以及卷积核大小、填充方式、以及步长的选择，而他们之间的关系又
+不是那么容易推断。这核全连接层的有很大不同，因为全连接层的输出形状与输入是完全独立的。除此之外，相对于
+全连接层，卷积层的{\em pooling \/}的阶段又增加了卷积操作的复杂度。最后，采用了所谓的转置卷积层（也称
+为微步卷积）到目前为止，越来越多的工作和他们的工作已经不同程度地清晰地解释了转置卷积与卷积的关系fractionally 
+strided convolutional layers\citep{zeiler2011adaptive,zeiler2014visualizing,
+long2015fully,radford2015unsupervised,visin15,im2016generating}。
+
+本指南的目标主要有两方面:
+\begin{enumerate}
+    \item 尽可能解释清楚卷积层与转置卷积层之间的关系。
+    \item 在卷积操作、pooling操作以及转置卷积操作中，关于输入大小、卷积核大小、填充方式、步长与输出大
+          小之间的关系以更加直观的理解方式呈现出来。
+\end{enumerate}
+
 
 Convolutional neural networks therefore constitute a very useful tool for
 machine learning practitioners. However, learning to use CNNs for the first time
