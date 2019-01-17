@@ -224,7 +224,12 @@ in the input).
 个特征图堆叠的例子也是很常见的\footnote{%
     相关例子见前面所提到的图片和声音片段的{\em 通道(channels)\/}。}
 一个带有参数的 {\em 卷积核(kernel)\/} (阴影区域)在输入的特征图上滑动。在每一个位置上，卷积核和输入
-特征图重叠的每个元素分别进行相乘，并将相乘的结果进行求和作为当前对应位置的输出。
+特征图重叠的每个元素分别进行相乘，并将相乘的结果进行求和作为当前对应位置的输出。这个过程可以按照自己
+所需要的输出特征图数目来利用不同的卷积核进行多次重复操作。 (\autoref{fig:full_picture}). 该步骤的
+最终输出被称作为{\em 输出特征图}.\footnote{%
+    尽管互从信号处理的角度来看互相关和卷积有一定的区别  ，但是当学习内核时，这两个概念是可以互相交换的。
+    为了方便以及与大部分的机器学习文献保持一致，本指南中将使用{\em 卷积\/}一词。
+}
 
 \autoref{fig:numerical_no_padding_no_strides} provides an example of a discrete
 convolution. The light blue grid is called the {\em input feature map}. To keep
@@ -293,6 +298,16 @@ are called {\em output feature maps}.\footnote{%
     kernel is learned. For the sake of simplicity and to stay consistent with
     most of the machine learning literature, the term {\em convolution\/}
     will be used in this guide.}
+
+如果输入多个特征图，则卷积核的数目必须是3维的。类似的，每个特征图都会与不同的卷积核分别进行
+卷积操作生成不同的特征图，这些生成的特征图对应位置元素相加形成一个新的特征图。
+
+图\autoref{fig:numerical_no_padding_no_strides}所展示的卷积是一个二维卷积的例子，但是它
+可以推广到N维卷积的情形。比如，在三维卷积中，卷积核将会是一个{\em 立方体\/}，并且它将从输入
+特征图的长、宽、高、三个维度进行滑动。
+
+定义离散卷积的众多卷积核的集合的尺寸主要和这些元素有关$(n, m, k_1, \ldots, k_N)$,
+其中
 If there are multiple input feature maps, the kernel will have to be
 3-dimensional -- or, equivalently each one of the feature maps will be
 convolved with a distinct kernel -- and the resulting feature maps will
@@ -308,14 +323,23 @@ corresponding to some permutation of $(n, m, k_1, \ldots, k_N)$, where
 
 \begin{equation*}
 \begin{split}
-    n &\equiv \text{number of output feature maps},\\
-    m &\equiv \text{number of input feature maps},\\
-    k_j &\equiv \text{kernel size along axis $j$}.
+    n &\equiv \text{输出特征图数目},\\
+    m &\equiv \text{输入特征图数目},\\
+    k_j &\equiv \text{沿 $j$轴 的卷积核尺寸}.
 \end{split}
 \end{equation*}
 
+以下参数影响卷积层在 $j$ 轴的输出尺寸:
+
 The following properties affect the output size $o_j$ of a convolutional layer
 along axis $j$:
+
+\begin{itemize}
+    \item $i_j$: 沿 $j$ 轴的输入尺寸,
+    \item $k_j$: 沿 $j$ 轴的卷积核尺寸,
+    \item $s_j$: 沿 $j$ 轴的步长(内核在特征图上每次进行滑动的距离),
+    \item $p_j$: 沿 $j$轴的0填充(在某一维上从开始到结束时填充0)数目.
+\end{itemize}
 
 \begin{itemize}
     \item $i_j$: input size along axis $j$,
@@ -326,9 +350,13 @@ along axis $j$:
         at the end of an axis) along axis $j$.
 \end{itemize}
 
-\noindent For instance, \autoref{fig:numerical_padding_strides} shows a $3
-\times 3$ kernel applied to a $5 \times 5$ input padded with a $1 \times 1$
-border of zeros using $2 \times 2$ strides.
+\noindent例图\autoref{fig:numerical_padding_strides} 展现了一个 $3
+\times 3$ 大小的卷积核在输入特征图为 $5 \times 5$、边界0填充为$1 \times 1$
+步长为 $2 \times 2$ 时进行卷积的情形。
+
+注意到步长构成了一种\emph{子采样}的形式。作为解释卷积核参与变换的度量参数，步长也可
+以被看做多少输出被保存下来。比如，在对卷积核进行步长为2的滑动时和进行步长为1的滑动但
+是仅仅保存奇数位输出是等效的。
 
 Note that strides constitute a form of \emph{subsampling}. As an alternative to
 being interpreted as a measure of how much the kernel is translated, strides
@@ -445,7 +473,7 @@ retaining only odd output elements (\autoref{fig:strides_subsampling}).
         one in $s = 2$ output elements is retained (right).}
 \end{figure}
 
-\section{Pooling}
+\section{池化}
 
 In addition to discrete convolutions themselves, {\em pooling\/} operations
 make up another important building block in CNNs. Pooling operations reduce
