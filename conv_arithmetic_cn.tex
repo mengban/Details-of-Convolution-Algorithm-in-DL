@@ -1106,7 +1106,13 @@ $p = 0$). As depicted in \autoref{fig:no_padding_no_strides}, this produces a
 $2 \times 2$ output. The transpose of this convolution will then have an output
 of shape $4 \times 4$ when applied on a $2 \times 2$ input.
 
-另外一种获得转置卷积输出的的方法是应用一种等效的但是效率较低的方式---直接卷积。
+另外一种获得转置卷积输出的的方法是应用一种等效的但是效率较低的方式---直接卷积。描述的例子可以通过$3 \times 3$
+的卷积核在一个输入为$2 \times 2$进行边界0填充为$2 \times 2$、步长为单位1步长(即$i' = 2$, $k' = k$, $s' = 1$ 
+以及 $p' = 2$)的卷积来实现，如图\autoref{fig:no_padding_no_strides_transposed}所示。值得注意的是卷积核以及
+卷积步长保持不变，但是转置卷积的输入进行了0填充。\footnote{注意到尽管应用转置矩阵是等效的，但是从可视化的部分
+可以看到由于0填充的操作增加了许多乘0操作。这样做是效率低下的，这里这样做的目的仅仅是方便展示用，在软件实现上通常
+不会执行无用的0乘操作。}
+
 
 Another way to obtain the result of a transposed convolution is to apply an
 equivalent -- but much less efficient -- direct convolution. The example
@@ -1121,6 +1127,9 @@ now zero padded.\footnote{Note that although
     illustration purposes, but it is inefficient, and software implementations
     will normally not perform the useless zero multiplications.}
 
+一种理解0填充背后的逻辑的方式是考虑转置卷积的连接模式并用它来拿指导等效卷积的设计。比如在直接卷积操作中，
+输入的左上方像素仅仅会影响输出的左上方像素，右上方像素仅仅与输出的右上方像素有关等。
+
 One way to understand the logic behind zero padding is to consider the
 connectivity pattern of the transposed convolution and use it to guide the
 design of the equivalent convolution. For example, the top left pixel of the
@@ -1128,10 +1137,15 @@ input of the direct convolution only contribute to the top left pixel of the
 output, the top right pixel is only connected to the top right output pixel,
 and so on.
 
+为了维持与等效的卷积相同的连接模式，对输入进行0填充是很有必要的，通过这种方式可以使卷积核的左上元素仅仅
+接触到左上像素点，即0填充的尺寸必须和卷积核尺寸的最小值相等。
+
 To maintain the same connectivity pattern in the equivalent convolution it is
 necessary to zero pad the input in such a way that the first (top-left)
 application of the kernel only touches the top-left pixel, i.e., the padding
 has to be equal to the size of the kernel minus one.
+
+
 
 Proceeding in the same fashion it is possible to determine similar observations
 for the other elements of the image, giving rise to the following relationship:
