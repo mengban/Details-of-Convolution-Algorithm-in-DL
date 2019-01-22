@@ -594,7 +594,7 @@ equal to the number of steps made, plus one, accounting for the initial position
 of the kernel (\autoref{fig:no_padding_no_strides_explained}). The same logic
 applies for the height axis.
 
-更准确的说，可以推断出以下公式:
+更准确的说，可以推断出以下关系式:
 
 More formally, the following relationship can be inferred:
 
@@ -653,7 +653,7 @@ For any $i$ and $k$, and for $s = 1$ and $p = 0$,
 \section{有0填充-单位步长}
 
 我们来考虑一下$s = 1$时0填充对有效输入的影响:填充$p$个0把有效输入的尺寸由 $i$变为$i + 2p$。
-在该情形下，由\autoref{rel:no_padding_no_strides}可以推出一下公式:
+在该情形下，由\autoref{rel:no_padding_no_strides}可以推出以下关系式:
 
 To factor in zero padding (i.e., only restricting to $s = 1$), let's consider
 its effect on the effective input size: padding with $p$ zeros changes the
@@ -734,13 +734,22 @@ setting every possible partial or complete superimposition of the kernel on the
 input feature map is taken into account. \autoref{fig:full_padding_no_strides}
 provides an example for $i = 5$, $k = 3$ and (therefore) $p = 2$.
 
-\section{No zero padding, non-unit strides}
+\section{无0填充-非单位步长}
+
+迄今为止得到的关系式只适用于单位步长的卷积。非单位步进步长的的卷积输出尺寸计算和单位步进步长的计算还是有
+很大区别的。为了便于分析，我们暂时不考虑0填充(比如 $s > 1$、$p = 0$的情况)。 
+图\autoref{fig:no_padding_strides}展示了$i =5$, $k = 3$ , $s = 2$,$s = 2$时的情形。
 
 All relationships derived so far only apply for unit-strided convolutions.
 Incorporating non unitary strides requires another inference leap. To
 facilitate the analysis, let's momentarily ignore zero padding (i.e., $s > 1$
 and $p = 0$). \autoref{fig:no_padding_strides} provides an example for $i =
 5$, $k = 3$ and $s = 2$.
+
+在此再提一下，输出尺寸可以由卷积核在输入特征图上的可能位置数目来确定。沿输入特征图的宽度举例：卷积核从输入
+特征图的最左部分开始滑动，但是此次不同的是每次滑动的步长为$s$直到卷积核到达输入特征图最右端。输出特征图的
+尺寸同样等于卷积核滑动步数加1---考虑到卷积核最初始的位置。(\autoref{fig:no_padding_strides_explained})
+。在沿着输入特征图高度进行滑动时是同样的逻辑。
 
 Once again, the output size can be defined in terms of the number of possible
 placements of the kernel on the input. Let's consider the width axis: the
@@ -751,21 +760,31 @@ accounting for the initial position of the kernel
 (\autoref{fig:no_padding_strides_explained}). The same logic applies for the
 height axis.
 
+基于此，可以推断出以下关系式:
+
 From this, the following relationship can be inferred:
 
 \begin{relationship}\label{rel:no_padding_strides}
-For any $i$, $k$ and $s$, and for $p = 0$,
+对任意的 $i$, $k$ , $s$, 以及 $p = 0$,
 \begin{equation*}
     o = \left\lfloor \frac{i - k}{s} \right\rfloor + 1.
 \end{equation*}
 \end{relationship}
+
+\noindent 向下取整函数说明了这样一个事实:卷积核在滑动的时候最后一步可能到达不了输入特征图的最右边，
+一些输入可能不会参与运算。
+图\autoref{fig:padding_strides_odd}展示了这一情形。
+
 
 \noindent The floor function accounts for the fact that sometimes the last
 possible step does {\em not\/} coincide with the kernel reaching the end of the
 input, i.e., some input units are left out (see
 \autoref{fig:padding_strides_odd} for an example of such a case).
 
-\section{Zero padding, non-unit strides}
+\section{0填充-非单位步长}
+
+最常见的情形---输入特征图进行0填充并且使用卷积步长不为单位1。为便于分析，此种情形可以认为输入的尺寸
+为$i + 2p$。
 
 The most general case (convolving over a zero padded input using non-unit
 strides) can be derived by applying \autoref{rel:no_padding_strides} on an
