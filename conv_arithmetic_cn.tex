@@ -1287,13 +1287,19 @@ the transpose of a fully padded convolution is a non-padded convolution:
 
 \section{无填充-非单位步长-转置}
 
-
+根据0填充卷积同样的逻辑进行推理，人们可能会认为$s > 1$的转置卷积和$s < 1$的等效卷积有关联。接下来
+将会解释这是合理的，这也是为何转置卷积也被成为{\em 部分跨越卷积}的原因。
 
 Using the same kind of inductive logic as for zero padded convolutions, one
 might expect that the transpose of a convolution with $s > 1$ involves an
 equivalent convolution with $s < 1$. As will be explained, this is a valid
 intuition, which is why transposed convolutions are sometimes called {\em
 fractionally strided convolutions}.
+
+图 \autoref{fig:no_padding_strides_transposed}展示了$i = 5$, $k= 3$ 以及 $s = 2$的例子，这将会
+帮助我们理解部分跨越所涉及的内容:0被插入到输入单元{\em 之间\/}，与单位步长相比，这使得卷积核的移动
+速度变慢。\footnote{这样做是低效的而且在真正应用中的实现是避免无用的乘0操作的，但是从概念上讲这是理解
+跨步卷积的一种方式。}
 
 \autoref{fig:no_padding_strides_transposed} provides an example for $i = 5$, $k
 = 3$ and $s = 2$ which helps understand what fractional strides involve: zeros
@@ -1303,16 +1309,17 @@ a slower pace than with unit strides.\footnote{Doing so is inefficient and
     conceptually it is how the transpose of a strided convolution can be
     thought of.}
 
+此时，我们假设卷积是无0填充的($p = 0$)并且它的输入尺寸$i$满足$i - k$是$s$的整数倍的条件。在这种情
+况下，以下关系式成立:
+
 For the moment, it will be assumed that the convolution is non-padded ($p = 0$)
 and that its input size $i$ is such that $i - k$ is a multiple of $s$. In that
 case, the following relationship holds:
 
 \begin{relationship}\label{rel:no_padding_strides_transposed}
-A convolution described by $p = 0$, $k$ and $s$ and whose input
-size is such that $i - k$ is a multiple of $s$, has an associated transposed
-convolution described by $\tilde{i}'$, $k' = k$, $s' = 1$ and $p' = k - 1$,
-where $\tilde{i}'$ is the size of the stretched input obtained by adding
-$s - 1$ zeros between each input unit, and its output size is
+由 $p = 0$, $k$ 及 $s$ 所表示以及其输入尺寸$i - k$是$s$的整数倍的卷积有一个相关联的转置卷积
+$\tilde{i}'$, $k' = k$, $s' = 1$ 以及 $p' = k - 1$,其中$\tilde{i}'$是通过在输入单元之间添加
+$s - 1$个0之后拉伸得到的尺寸，该装置卷积的输出为：
 \begin{equation*}
 \begin{split}
     o' = s (i' - 1) + k.
@@ -1364,20 +1371,23 @@ $s - 1$ zeros between each input unit, and its output size is
         $\tilde{i}' = 5$, $k' = k$, $s' = 1$ and $p' = 1$).}
 \end{figure}
 
-\section{Zero padding, non-unit strides, transposed}
+\section{0填充-非零步长-装置}
+
+当卷积的输入尺寸为$i$并且满足$i + 2p - k$是步长$s$的整数倍时，此时的分析可以通过结合
+图\autoref{rel:arbitrary_padding_no_strides_transposed} 以及
+图\autoref{rel:no_padding_strides_transposed}的扩展为零填充的情形:
 
 When the convolution's input size $i$ is such that $i + 2p - k$ is a multiple
 of $s$, the analysis can extended to the zero padded case by combining
 \autoref{rel:arbitrary_padding_no_strides_transposed} and
 \autoref{rel:no_padding_strides_transposed}:
 
+
 \begin{relationship}\label{rel:padding_strides_transposed}
-A convolution described by $k$, $s$ and $p$ and whose
-input size $i$ is such that $i + 2p - k$ is a multiple of $s$ has an associated
-transposed convolution described by $\tilde{i}'$, $k' = k$, $s' = 1$ and
-$p' = k - p - 1$, where $\tilde{i}'$ is the size of the stretched input
-obtained by adding $s - 1$ zeros between each input unit, and its output size
-is
+A由$k$, $s$ 以及 $p$ 所表示的以及输入尺寸为$i$并且$i + 2p - k$ 是 $s$整数倍的卷积有一个相关联的转置
+卷积 $\tilde{i}'$, $k' = k$, $s' = 1$ 以及
+$p' = k - p - 1$, 其中 $\tilde{i}'$ 是通过在输入单元之间添加
+$s - 1$个0之后拉伸得到的尺寸，该装置卷积的输出为：
 \begin{equation*}
 \begin{split}
     o' = s (i' - 1) + k - 2p.
@@ -1387,6 +1397,8 @@ is
 
 \autoref{fig:padding_strides_transposed} provides an example for $i = 5$, $k =
 3$, $s = 2$ and $p = 1$.
+
+
 
 The constraint on the size of the input $i$ can be relaxed by introducing
 another parameter $a \in \{0, \ldots, s - 1\}$ that allows to distinguish
