@@ -1145,40 +1145,48 @@ necessary to zero pad the input in such a way that the first (top-left)
 application of the kernel only touches the top-left pixel, i.e., the padding
 has to be equal to the size of the kernel minus one.
 
-
+以相同的方式进行操作，可以确定图像的其他元素会产生类似的结果，从而产生以下关系：
 
 Proceeding in the same fashion it is possible to determine similar observations
 for the other elements of the image, giving rise to the following relationship:
 
 \begin{relationship}\label{rel:no_padding_no_strides_transposed}
-A convolution described by $s = 1$, $p = 0$ and $k$ has an associated
-transposed convolution described by $k' = k$, $s' = s$ and $p' = k - 1$ and its
-output size is
+由 $s = 1$, $p = 0$ 以及 $k$ 表示的卷积有一个相关联的转置卷积$k' = k$, $s' = s$ 以及
+ $p' = k - 1$ ，该转置矩阵的输出尺寸为：
 \begin{equation*}
     o' = i' + (k - 1).
 \end{equation*}
 \end{relationship}
 
+有趣是，这对应于步长为单位1步长的全填充卷积。
+
 Interestingly, this corresponds to a fully padded convolution with unit
 strides.
 
-\section{Zero padding, unit strides, transposed}
+\section{0填充-单位步长-转置}
+
+以上可知无0填充的转置卷积等效于和一个有0填充的输入进行卷积，因此我们有理由认为带有0填充的转置
+卷积和同带有{\em 更少的 \/}0填充输入进行卷积是等价的。
 
 Knowing that the transpose of a non-padded convolution is equivalent to
 convolving a zero padded input, it would be reasonable to suppose that the
 transpose of a zero padded convolution is equivalent to convolving an input
 padded with {\em less\/} zeros.
 
+实际情况确实是如此，如图\autoref{fig:arbitrary_padding_no_strides_transposed} 所示，
+此时$i = 5$, $k = 4$ ，$p = 2$。
+
 It is indeed the case, as shown in
 \autoref{fig:arbitrary_padding_no_strides_transposed} for $i = 5$, $k = 4$ and
 $p = 2$.
 
+通常来说，以下关系式适用于带有0填充卷积:
 Formally, the following relationship applies for zero padded convolutions:
 
+
 \begin{relationship}\label{rel:arbitrary_padding_no_strides_transposed}
-A convolution described by $s = 1$, $k$ and $p$ has an
-associated transposed convolution described by $k' = k$, $s' = s$ and $p' = k -
-p - 1$ and its output size is
+由 $s = 1$, $k$ 以及 $p$ 所表示的卷积有一个相关联的转置卷积 $k' = k$, $s' = s$ 以及 $p' = k -
+p - 1$ ，并且该转置卷积的输出为:
 \begin{equation*}
     o' = i' + (k - 1) - 2p.
 \end{equation*}
@@ -1229,6 +1237,9 @@ p - 1$ and its output size is
 
 \subsection{Half (same) padding, transposed}
 
+通过应用于前面所述的一样的归纳推理，我们有理由认为半填充转置卷积的等效卷积本身是半填充卷积，假设半
+填充卷积的输出尺寸和输入尺寸相同。因此以下关系式成立:
+
 By applying the same inductive reasoning as before, it is reasonable to expect
 that the equivalent convolution of the transpose of a half padded convolution
 is itself a half padded convolution, given that the output size of a half
@@ -1236,9 +1247,9 @@ padded convolution is the same as its input size. Thus the following relation
 applies:
 
 \begin{relationship}\label{rel:half_padding_no_strides_transposed}
-A convolution described by $k = 2n + 1, \quad n \in \mathbb{N}$, $s = 1$ and $p
-= \lfloor k / 2 \rfloor = n$ has an associated transposed convolution described
-by $k' = k$, $s' = s$ and $p' = p$ and its output size is
+由 $k = 2n + 1, \quad n \in \mathbb{N}$, $s = 1$ 以及 $p
+= \lfloor k / 2 \rfloor = n$ 所表示的卷积有一个相关联的转置卷积$k' = k$, $s' = s$ 以及 $p' = p$ ，
+该转置卷积的输出尺寸为：
 \begin{equation*}
 \begin{split}
     o' &= i' + (k - 1) - 2p \\
@@ -1248,19 +1259,21 @@ by $k' = k$, $s' = s$ and $p' = p$ and its output size is
 \end{equation*}
 \end{relationship}
 
-\autoref{fig:same_padding_no_strides_transposed} provides an example for $i =
-5$, $k = 3$ and (therefore) $p = 1$.
+图 \autoref{fig:same_padding_no_strides_transposed} 展示了一个 $i =
+5$, $k = 3$ 以及$p = 1$的例子。
 
 \subsection{Full padding, transposed}
+
+知道了无填充转置卷积的等效卷积涉及全填充的前提下，针对于我们来说就不意外了:全填充转置卷积的等效卷积
+是一个无填充卷积。
 
 Knowing that the equivalent convolution of the transpose of a non-padded
 convolution involves full padding, it is unsurprising that the equivalent of
 the transpose of a fully padded convolution is a non-padded convolution:
 
 \begin{relationship}\label{rel:full_padding_no_strides_transposed}
-A convolution described by $s = 1$, $k$ and $p = k - 1$ has an
-associated transposed convolution described by $k' = k$, $s' = s$ and $p' = 0$
-and its output size is
+由 $s = 1$, $k$ 以及 $p = k - 1$所表示的卷积有一个相关联的转置卷积$k' = k$, $s' = s$ 以及 $p' = 0$
+，该转置卷积的输出尺寸为:
 \begin{equation*}
 \begin{split}
     o' &= i' + (k - 1) - 2p \\
@@ -1272,7 +1285,9 @@ and its output size is
 \autoref{fig:full_padding_no_strides_transposed} provides an example for $i =
 5$, $k = 3$ and (therefore) $p = 2$.
 
-\section{No zero padding, non-unit strides, transposed}
+\section{无填充-非单位步长-转置}
+
+
 
 Using the same kind of inductive logic as for zero padded convolutions, one
 might expect that the transpose of a convolution with $s > 1$ involves an
