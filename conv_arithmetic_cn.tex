@@ -561,8 +561,8 @@ setting:
     \item 二维离散卷积 ($N = 2$),
     \item 输入为正方形 ($i_1 = i_2 = i$),
     \item 卷积核尺寸为正方形 ($k_1 = k_2 = k$),
-    \item 在各个轴步长相同 ($s_1 = s_2 = s$),
-    \item 在各个轴0填充相同 ($p_1 = p_2 = p$).
+    \item 沿每个轴的步长相同 ($s_1 = s_2 = s$),
+    \item 沿每个轴的0填充相同 ($p_1 = p_2 = p$).
 \end{itemize}
 
 以上假设有利于分析以及可视化，但要记住的是这里描述得到的结果同样适用于任意维度的的卷积以及
@@ -784,7 +784,7 @@ input, i.e., some input units are left out (see
 \section{0填充-非单位步长}
 
 最常见的情形---输入特征图进行0填充并且使用卷积步长不为单位1。为便于分析，此种情形可以认为输入的尺寸
-为$i + 2p$。
+为$i + 2p$，此时与情景\autoref{rel:arbitrary_padding_no_strides}类似。
 
 The most general case (convolving over a zero padded input using non-unit
 strides) can be derived by applying \autoref{rel:no_padding_strides} on an
@@ -798,11 +798,20 @@ For any $i$, $k$, $p$ and $s$,
 \end{equation*}
 \end{relationship}
 
+\noindent 如前所述，向下取整操会使在某些情况下不同的输入尺寸产生相同的输出尺寸。 更具体的说，如果
+$i + 2p - k$是 $s$的整数倍，那么对于任何输入尺寸$j = i + a, \quad a \in \{0,\ldots,s - 1\}$
+都会产生相同尺寸的输出。注意这种情况仅适用于$s > 1$的情形。
+
 \noindent As before, the floor function means that in some cases a convolution
 will produce the same output size for multiple input sizes. More specifically,
 if $i + 2p - k$ is a multiple of $s$, then any input size $j = i + a, \quad a
 \in \{0,\ldots,s - 1\}$ will produce the same output size. Note that this
 ambiguity applies only for $s > 1$.
+
+图\autoref{fig:padding_strides} 展示了 $i = 5$, $k = 3$, $s = 2$
+以及 $p = 1$的情形，图 \autoref{fig:padding_strides_odd} 展示了
+$i = 6$, $k = 3$, $s = 2$ 以及 $p = 1$的情形. 有趣的是，尽管输入特征图尺寸不同，但是他们的输出尺
+寸是相同的。虽然这不会影响{\em 卷积}的分析，然而这会使{\em 转置卷积}的分析变得复杂。
 
 \autoref{fig:padding_strides} shows an example with $i = 5$, $k = 3$, $s = 2$
 and $p = 1$, while \autoref{fig:padding_strides_odd} provides an example for
@@ -889,7 +898,13 @@ in the case of {\em transposed convolutions}.
     \caption{Counting kernel positions.}
 \end{figure}
 
-\chapter{Pooling arithmetic}
+\chapter{池化算法}
+
+在神经网络中，池化层对小型变换提供了不变性。最常见的池化是\emph{最大值池化}，基本操作时将输入特征图
+(通常是非重叠的)分割成小块，然后取每个小块的最大值。其他类型的池化包括均值池化等，所有的池化方式都采
+用了相同的思想：通过对输入特征图的每一小块进行非线性运算来对，最终再将这些局部输出合并
+\citep{%
+boureau-cvpr-10,boureau-icml-10,boureau-iccv-11,ICML2011Saxe_551}。
 
 In a neural network, pooling layers provide invariance to small translations of
 the input. The most common kind of pooling is \emph{max pooling}, which
@@ -899,6 +914,9 @@ mean or average pooling, which all share the same idea of aggregating the input
 locally by applying a non-linearity to the content of some patches \citep{%
 boureau-cvpr-10,boureau-icml-10,boureau-iccv-11,ICML2011Saxe_551}.
 
+一些读者可能已经意识到卷积的处理只是依赖于将一些函数重复应用于输入的子集上的假设。这意味着在前一章所
+推导出的关系式可以适用于池化算法。由于池化过程没有0填充参与，因此以上关系式的形式通常如下：
+
 Some readers may have noticed that the treatment of convolution arithmetic only
 relies on the assumption that some function is repeatedly applied onto subsets
 of the input. This means that the relationships derived in the previous chapter
@@ -906,15 +924,19 @@ can be reused in the case of pooling arithmetic. Since pooling does not involve
 zero padding, the relationship describing the general case is as follows:
 
 \begin{relationship}\label{rel:pooling}
-For any $i$, $k$ and $s$,
+对任意的 $i$, $k$ 以及 $s$,
 \begin{equation*}
     o = \left\lfloor \frac{i - k}{s} \right\rfloor + 1.
 \end{equation*}
 \end{relationship}
 
-\noindent This relationship holds for any type of pooling.
+\noindent 该关系式适用于任何池化类型。
 
-\chapter{Transposed convolution arithmetic}
+\chapter{转置卷积算法}
+
+转置卷积来源于对在常规卷积的相反方向应用一种变换的需求，即从某种卷积输出形状的到具有和输入具有相同
+形状的变换，于此同时还能保证中间的连接模式和上述卷积兼容。比如，人们可能使用这样的变换作为卷积自编码的
+解码部分或者将输入特征图映射到更高的维度上去。
 
 The need for transposed convolutions generally arises from the desire to use a
 transformation going in the opposite direction of a normal convolution, i.e.,
@@ -924,30 +946,42 @@ pattern that is compatible with said convolution. For instance, one might use
 such a transformation as the decoding layer of a convolutional autoencoder or to
 project feature maps to a higher-dimensional space.
 
+再强调一遍，这种卷积情况比仅仅需要一个转置的权重矩阵的全连接的情况更加复杂。然而，由于任何卷积操作都可以
+归结为矩阵运算，因此从全连接的情况得到的一些经验在解决卷积的情况是行之有效的。
+
 Once again, the convolutional case is considerably more complex than the
 fully-connected case, which only requires to use a weight matrix whose shape
 has been transposed. However, since every convolution boils down to an
 efficient implementation of a matrix operation, the insights gained from the
 fully-connected case are useful in solving the convolutional case.
 
+与卷积算法一样，转置卷积的属性不跨轴交互的事实简化了转置卷积的讨论。
+
 Like for convolution arithmetic, the dissertation about transposed convolution
 arithmetic is simplified by the fact that transposed convolution properties
 don't interact across axes.
 
+本章节将针对以下设置展开讨论：
 The chapter will focus on the following setting:
 
 \begin{itemize}
-    \item 2-D transposed convolutions ($N = 2$),
-    \item square inputs ($i_1 = i_2 = i$),
-    \item square kernel size ($k_1 = k_2 = k$),
-    \item same strides along both axes ($s_1 = s_2 = s$),
-    \item same zero padding along both axes ($p_1 = p_2 = p$).
+    \item 二维转置卷积 ($N = 2$),
+    \item 输入为正方形 ($i_1 = i_2 = i$),
+    \item 卷积核尺寸为正方形 ($k_1 = k_2 = k$),
+    \item 沿每个轴的步长相同 ($s_1 = s_2 = s$),
+    \item 沿每个轴的0填充相同 ($p_1 = p_2 = p$).
 \end{itemize}
+
+\noindent 这里描述得到的结果同样适用于任意维度的的卷积以及非正方形参数的情形。
 
 \noindent Once again, the results outlined generalize to the N-D and non-square
 cases.
 
-\section{Convolution as a matrix operation}
+\section{卷积---作为矩阵运算}
+
+以图\autoref{fig:no_padding_no_strides}展示的卷积为例。如果将输入和输出从左到右、从上至下展开为向量，
+卷积可以用稀疏矩阵$\mathbf{C}$来表示，非零元素$w_{i,j}$是卷积核在相应位置的元素($i$、$j$ 分别分别代表
+卷积核行和列的索引):
 
 Take for example the convolution represented in
 \autoref{fig:no_padding_no_strides}. If the input and output were to be unrolled
@@ -969,15 +1003,24 @@ the kernel respectively):
     \end{pmatrix}$}
 \end{equation*}
 
+该线性操作将输入矩阵展平为一个16维的向量，并且产生一个4维的输出，最终将该输出变为 $2
+\times 2$的输出矩阵。
+
 This linear operation takes the input matrix flattened as a 16-dimensional
 vector and produces a 4-dimensional vector that is later reshaped as the $2
 \times 2$ output matrix.
+
+采用这种表达方式，反向传递可以轻易地通过将矩阵$\mathbf{C}$转置得到，换句话说，误差可以通过与$\mathbf{C}$
+相乘来进行反向传播。该操作将一个4维输入向量作为输入，产生一个16维向量作为输出，并且它的连接模式和$\mathbf{C}$
+在结构上是兼容的。
 
 Using this representation, the backward pass is easily obtained by transposing
 $\mathbf{C}$; in other words, the error is backpropagated by multiplying the
 loss with $\mathbf{C}^T$. This operation takes a 4-dimensional vector as input
 and produces a 16-dimensional vector as output, and its connectivity pattern is
 compatible with $\mathbf{C}$ by construction.
+
+值的注意的是，卷积核$\mathbf{w}$同时定义了正向传递、反向传递所使用的矩阵$\mathbf{C}$$\mathbf{C}^T$。
 
 Notably, the kernel $\mathbf{w}$ defines both the matrices $\mathbf{C}$ and
 $\mathbf{C}^T$ used for the forward and backward passes.
