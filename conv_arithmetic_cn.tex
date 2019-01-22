@@ -1025,13 +1025,21 @@ compatible with $\mathbf{C}$ by construction.
 Notably, the kernel $\mathbf{w}$ defines both the matrices $\mathbf{C}$ and
 $\mathbf{C}^T$ used for the forward and backward passes.
 
-\section{Transposed convolution}
+\section{转置卷积}
+
+现在让我们思考一下相反的工作方式都需要什么:即如何在保持图\autoref{fig:no_padding_no_strides}
+所示的连接模式时将一个4维空间映射到16维空间。该操作被称为{\em 转置卷积}。
 
 Let's now consider what would be required to go the other way around, i.e., map
 from a 4-dimensional space to a 16-dimensional space, while keeping the
 connectivity pattern of the convolution depicted in
 \autoref{fig:no_padding_no_strides}. This operation is known as a {\em
 transposed convolution}.
+
+转置卷积---同样被称作{\em 部分跨越卷积\/}或者 {\em 反卷积\/}\footnote{术语'反卷积'有时用在文献中
+，但是反对这样，因为反卷积在数学上定义为卷积的逆，这与转置卷积是不同的。} -- 转卷积主要是通过交换卷
+积过程的前向转播以及后向传播来工作的。一种方法是注意卷积核定义了卷积，但是判断是否是直接卷积还是转置
+卷积可以通过如何计算前向以及后向传递来确定。
 
 Transposed convolutions -- also called {\em fractionally strided convolutions\/}
 or {\em deconvolutions\/}\footnote{The term ``deconvolution'' is sometimes used
@@ -1042,6 +1050,11 @@ backward passes of a convolution. One way to put it is to note that the kernel
 defines a convolution, but whether it's a direct convolution or a transposed
 convolution is determined by how the forward and backward passes are computed.
 
+比如:尽管卷积核$\mathbf{w}$定义了一个前向与后向传递分别与$\mathbf{C}$、$\mathbf{C}^T$进行相乘的
+卷积运算，但是它同样也定义了一个前向与后向传递分别与$\mathbf{C}^T$、$(\mathbf{C}^T)^T = \mathbf{C}$
+进行相乘的转置卷积。\footnote{转置卷积可以认为是一些卷积对于其输入的梯度，这也是转置卷积在实际使用过程中
+常见的实现方法。}
+
 For instance, although the kernel $\mathbf{w}$ defines a convolution whose
 forward and backward passes are computed by multiplying with $\mathbf{C}$ and
 $\mathbf{C}^T$ respectively, it {\em also\/} defines a transposed convolution
@@ -1051,10 +1064,17 @@ $\mathbf{C}^T$ and $(\mathbf{C}^T)^T = \mathbf{C}$ respectively.\footnote{The
     some\/} convolution with respect to its input, which is usually how
     transposed convolutions are implemented in practice.}
 
+
+最后需要注意的是用直接卷积来对转置卷积进行仿真总是可行的。这样做的缺点是通常需要在输入特征图的行与列上添加
+很多0元素，这会导致很多低效率的计算。 
+
 Finally note that it is always possible to emulate a transposed convolution with
 a direct convolution. The disadvantage is that it usually involves adding many
 columns and rows of zeros to the input, resulting in a much less efficient
 implementation.
+
+在前面介绍的基础上，本章将继续做一些关于卷积算法章节的回顾，通过引用与其共享内核的直接卷积以及定义与其等效的
+直接卷积来推导每个转置卷积的性质，并定义等效的直接卷积。
 
 Building on what has been introduced so far, this chapter will proceed somewhat
 backwards with respect to the convolution arithmetic chapter, deriving the
@@ -1062,7 +1082,11 @@ properties of each transposed convolution by referring to the direct
 convolution with which it shares the kernel, and defining the equivalent direct
 convolution.
 
-\section{No zero padding, unit strides, transposed}
+\section{无0填充-单位步长-转置}
+
+一种思考转置卷积在输入上操作的最简单的方式是把这个输入想象成直接卷积在某些初始化的特征图上的进行运算的结果。
+这样该转置卷积就可以认为是恢复这个初始化特征图\emph{尺寸}~\footnote{注意到由于转置卷积并不是逆卷积，因此
+转置卷积并不保证恢复出输入本身，转置卷积的输出是一个和原来输入具有相同宽和高的特征图。}的操作。
 
 The simplest way to think about a transposed convolution on a given input is to
 imagine such an input as being the result of a direct convolution applied on
@@ -1072,11 +1096,17 @@ the operation that allows to recover the \emph{shape}~\footnote{Note that the
   is not defined as the inverse of the convolution, but rather just returns a
   feature map that has the same width and height.} of this initial feature map.
 
+我们考虑$3 \times 3$的卷积核在一个$4 \times 4$的特征图上进行单位步长、无0填充(即$i = 4$, $k = 3$, $s = 1$,
+$p = 0$)的卷积情形。如图\autoref{fig:no_padding_no_strides}所示，这会产生一个$2 \times 2$的输出。该卷积的
+转置卷积将会在$2 \times 2$的输入上产生一个$4 \times 4$的输出。
+
 Let's consider the convolution of a $3 \times 3$ kernel on a $4 \times 4$
 input with unitary stride and no padding (i.e., $i = 4$, $k = 3$, $s = 1$ and
 $p = 0$). As depicted in \autoref{fig:no_padding_no_strides}, this produces a
 $2 \times 2$ output. The transpose of this convolution will then have an output
 of shape $4 \times 4$ when applied on a $2 \times 2$ input.
+
+另外一种获得转置卷积输出的的方法是应用一种等效的但是效率较低的方式---直接卷积。
 
 Another way to obtain the result of a transposed convolution is to apply an
 equivalent -- but much less efficient -- direct convolution. The example
