@@ -129,6 +129,41 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
 本章简要回顾了卷积神经网络的主要构成模块，即离散卷积和pooling。欲更加深入了解该相关课题，
 可以参看深度学习经典教材<<Deep learning>>的第九章\citep{Goodfellow-et-al-2016-Book}。
 
+Convolutional neural networks therefore constitute a very useful tool for
+machine learning practitioners. However, learning to use CNNs for the first time
+is generally an intimidating experience. A convolutional layer's output shape is
+affected by the shape of its input as well as the choice of kernel shape, zero
+padding and strides, and the relationship between these properties is not
+trivial to infer. This contrasts with fully-connected layers, whose output size
+is independent of the input size. Additionally, CNNs also usually feature a {\em
+pooling\/} stage, adding yet another level of complexity with respect to
+fully-connected networks.  Finally, so-called transposed convolutional layers
+(also known as fractionally strided convolutional layers) have been employed in
+more and more work as of late \citep{zeiler2011adaptive,zeiler2014visualizing,
+long2015fully,radford2015unsupervised,visin15,im2016generating}, and their
+relationship with convolutional layers has been explained with various degrees
+of clarity.
+
+This guide's objective is twofold:
+
+\begin{enumerate}
+    \item Explain the relationship between convolutional layers and transposed
+        convolutional layers.
+    \item Provide an intuitive understanding of the relationship between input
+        shape, kernel shape, zero padding, strides and output shape in
+        convolutional, pooling and transposed convolutional layers.
+\end{enumerate}
+
+In order to remain broadly applicable, the results shown in this guide are
+independent of implementation details and apply to all commonly used machine
+learning frameworks, such as Theano
+\citep{bergstra2010theano,bastien2012theano}, Torch \citep{collobert2011torch7},
+Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}.
+
+This chapter briefly reviews the main building blocks of CNNs, namely discrete
+convolutions and pooling. For an in-depth treatment of the subject, see Chapter
+9 of the Deep Learning textbook \citep{Goodfellow-et-al-2016-Book}.
+
 \section{离散卷积}
 神经网络的基本功能是进行\emph{仿射变换(affine transformations)}:接收一个向量作为输入并将其与矩阵进行相
 乘以产生输出(在将输出进行非线性映射之前，都会给将其加上一个偏置向量)。输入可以是任意类型的，
@@ -150,6 +185,40 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
 离散卷积是一种保留了数据顺序信息的线性运算。它是稀疏的(只有少数的输入单元参与给定的输出单元的计算)。
 它是参数重用的(相同的权重参数被输入的多个位置重用)。
 
+
+
+The bread and butter of neural networks is \emph{affine transformations}: a
+vector is received as input and is multiplied with a matrix to produce an
+output (to which a bias vector is usually added before passing the result
+through a nonlinearity). This is applicable to any type of input, be it an
+image, a sound clip or an unordered collection of features: whatever their
+dimensionality, their representation can always be flattened into a vector
+before the transformation.
+
+Images, sound clips and many other similar kinds of data have an intrinsic
+structure. More formally, they share these important properties:
+
+\begin{itemize}
+    \item They are stored as multi-dimensional arrays.
+    \item They feature one or more axes for which ordering matters (e.g., width
+        and height axes for an image, time axis for a sound clip).
+    \item One axis, called the channel axis, is used to access different views
+        of the data (e.g., the red, green and blue channels of a color image, or
+        the left and right channels of a stereo audio track).
+\end{itemize}
+
+These properties are not exploited when an affine transformation is applied; in
+fact, all the axes are treated in the same way and the topological information
+is not taken into account. Still, taking advantage of the implicit structure of
+the data may prove very handy in solving some tasks, like computer vision and
+speech recognition, and in these cases it would be best to preserve it. This is
+where discrete convolutions come into play.
+
+A discrete convolution is a linear transformation that preserves this notion of
+ordering. It is sparse (only a few input units contribute to a given output
+unit) and reuses parameters (the same weights are applied to multiple locations
+in the input).
+
 \autoref{fig:numerical_no_padding_no_strides} 提供了一个离散卷积的例子，淡蓝色网格被称作
 {\em 输入特征图(input feature map)}. 为了绘图方便，图示只展示了单个的输入特征图，但是多
 个特征图堆叠的例子也是很常见的\footnote{%
@@ -161,6 +230,14 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
     尽管互从信号处理的角度来看互相关和卷积有一定的区别  ，但是当学习内核时，这两个概念是可以互相交换的。
     为了方便以及与大部分的机器学习文献保持一致，本指南中将使用{\em 卷积\/}一词。
 }
+
+\autoref{fig:numerical_no_padding_no_strides} provides an example of a discrete
+convolution. The light blue grid is called the {\em input feature map}. To keep
+the drawing simple, a single input feature map is represented, but it is not
+uncommon to have multiple feature maps stacked one onto another.\footnote{%
+    An example of this is what was referred to earlier as {\em channels\/} for
+    images and sound clips.}
+A {\em kernel\/} (shaded area) of value
 
 \begin{figure}[H]
     \centering
@@ -210,6 +287,18 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
         $s_1 = s_2 = 2$, and $p_1 = p_2 = 1$.}
 \end{figure}
 
+\noindent slides across the input feature map. At each location, the product
+between each element of the kernel and the input element it overlaps is computed
+and the results are summed up to obtain the output in the current location. The
+procedure can be repeated using different kernels to form as many output feature
+maps as desired (\autoref{fig:full_picture}). The final outputs of this procedure
+are called {\em output feature maps}.\footnote{%
+    While there is a distinction between convolution and cross-correlation from
+    a signal processing perspective, the two become interchangeable when the
+    kernel is learned. For the sake of simplicity and to stay consistent with
+    most of the machine learning literature, the term {\em convolution\/}
+    will be used in this guide.}
+
 如果输入多个特征图，则卷积核的数目必须是3维的。类似的，每个特征图都会与不同的卷积核分别进行
 卷积操作生成不同的特征图，这些生成的特征图对应位置元素相加形成一个新的特征图。
 
@@ -219,6 +308,18 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
 
 定义离散卷积的众多卷积核的集合的尺寸主要和这些元素有关$(n, m, k_1, \ldots, k_N)$,
 其中
+If there are multiple input feature maps, the kernel will have to be
+3-dimensional -- or, equivalently each one of the feature maps will be
+convolved with a distinct kernel -- and the resulting feature maps will
+be summed up elementwise to produce the output feature map.
+
+The convolution depicted in \autoref{fig:numerical_no_padding_no_strides} is an
+instance of a 2-D convolution, but it can be generalized to N-D convolutions.
+For instance, in a 3-D convolution, the kernel would be a {\em cuboid\/} and
+would slide across the height, width and depth of the input feature map.
+
+The collection of kernels defining a discrete convolution has a shape
+corresponding to some permutation of $(n, m, k_1, \ldots, k_N)$, where
 
 \begin{equation*}
 \begin{split}
