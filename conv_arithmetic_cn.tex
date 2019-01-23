@@ -255,13 +255,8 @@ along axis $j$:
 
 注意到步长构成了一种\emph{子采样}的形式。作为解释卷积核参与变换的度量参数，步长也可
 以被看做多少输出被保存下来。比如，在对卷积核进行步长为2的滑动时和进行步长为1的滑动但
-是仅仅保存奇数位输出是等效的。
+是仅仅保存奇数位输出是等效的(\autoref{fig:strides_subsampling})。
 
-Note that strides constitute a form of \emph{subsampling}. As an alternative to
-being interpreted as a measure of how much the kernel is translated, strides
-can also be viewed as how much of the output is retained. For instance, moving
-the kernel by hops of two is equivalent to moving the kernel by hops of one but
-retaining only odd output elements (\autoref{fig:strides_subsampling}).
 
 \begin{figure}[p]
     \centering
@@ -323,15 +318,7 @@ retaining only odd output elements (\autoref{fig:strides_subsampling}).
     输出的对应位置元素进行相加求和即可得到新的特征图。在图示中间部分以及右部重复以上操作将会分别产生第二、
     第三张特征图，把所有的输出特征图进行组合即可得到新的输出。
     }
-    \caption{\label{fig:full_picture} A convolution mapping from two input
-        feature maps to three output feature maps using a $3 \times 2 \times 3
-        \times 3$ collection of kernels $\mathbf{w}$. In the left pathway, input
-        feature map 1 is convolved with kernel $\mathbf{w}_{1,1}$ and input
-        feature map 2 is convolved with kernel $\mathbf{w}_{1,2}$, and the
-        results are summed together elementwise to form the first output feature
-        map. The same is repeated for the middle and right pathways to form the
-        second and third feature maps, and all three output feature maps are
-        grouped together to form the output.}
+
 \end{figure}
 
 \begin{figure}[p]
@@ -385,27 +372,12 @@ retaining only odd output elements (\autoref{fig:strides_subsampling}).
 对特征图的某个区域进行摘要提取来实现对输入特征图的降维，常用的操作比如取某一池化区域的最大值
 或者均值。
 
-In addition to discrete convolutions themselves, {\em pooling\/} operations
-make up another important building block in CNNs. Pooling operations reduce
-the size of feature maps by using some function to summarize subregions, such
-as taking the average or the maximum value.
-
 池化通过在输入的特征图上进行滑动并且根据{\em 池化函数}来进行窗口数据的填充。在某些情景下,池化
 的工作方式和离散卷积特别像，只是将卷积核的线性组合方式变成了一些其他的函数。
 \autoref{fig:numerical_average_pooling}展示了平均池化的例子，\autoref{fig:numerical_max_pooling}
 展示了最大值池化的例子。
 
-Pooling works by sliding a window across the input and feeding the content of
-the window to a {\em pooling function}. In some sense, pooling works very much
-like a discrete convolution, but replaces the linear combination described by
-the kernel with some other function. \autoref{fig:numerical_average_pooling}
-provides an example for average pooling, and \autoref{fig:numerical_max_pooling}
-does the same for max pooling.
-
 以下参数影响池化层在$j$轴的输出尺寸$o_j$:
-
-The following properties affect the output size $o_j$ of a pooling layer
-along axis $j$:
 
 \begin{itemize}
     \item $i_j$: 沿 $j$轴的输入尺寸,
@@ -450,12 +422,6 @@ along axis $j$:
 由于卷积层参数之间不会跨轴进行交互，因此关于他们之间关系的分析还是比较简单的。比如沿$j$轴卷积核大小、
 步长、0填充等参数之后影响$j$轴的输出。因此，本章的讨论将会在以下简单设定下进行:
 
-The analysis of the relationship between convolutional layer properties is eased
-by the fact that they don't interact across axes, i.e., the choice of kernel
-size, stride and zero padding along axis $j$ only affects the output size of
-axis $j$. Because of that, this chapter will focus on the following simplified
-setting:
-
 \begin{itemize}
     \item 二维离散卷积 ($N = 2$),
     \item 输入为正方形 ($i_1 = i_2 = i$),
@@ -467,35 +433,18 @@ setting:
 以上假设有利于分析以及可视化，但要记住的是这里描述得到的结果同样适用于任意维度的的卷积以及
 非正方形参数的情况。
 
-This facilitates the analysis and the visualization, but keep in mind that the
-results outlined here also generalize to the N-D and non-square cases.
-
 \section{无0填充-单位步长}
 
 这是分析起来最简单的一种情况:卷积核只是从输入特征图的每个位置滑过。\autoref{fig:no_padding_no_strides}
 展示了$s = 1$ 、$p = 0$、$i = 4$、$k =3$的情形。
 
-The simplest case to analyze is when the kernel just slides across every
-position of the input (i.e., $s = 1$ and $p = 0$).
-\autoref{fig:no_padding_no_strides} provides an example for $i = 4$ and $k =
-3$.
 
 在这种情形下，一种定义输出尺寸的方式是根据卷积核在输入特征图上的可以到达的位置数目。沿输入特征图的宽度举例：
 卷积核在输入特征图的最左侧开始滑动直到到达输入特征图的最右侧的边，并且每次滑动的距离为一个单位。输出的尺寸
 大小将等于滑动的步数加1(1为卷积核最开始的所处的位置)(\autoref{fig:no_padding_no_strides_explained}。
 在沿着输入特征图高度进行滑动时是同样的逻辑。
 
-One way of defining the output size in this case is by the number of possible
-placements of the kernel on the input. Let's consider the width axis: the kernel
-starts on the leftmost part of the input feature map and slides by steps of one
-until it touches the right side of the input. The size of the output will be
-equal to the number of steps made, plus one, accounting for the initial position
-of the kernel (\autoref{fig:no_padding_no_strides_explained}). The same logic
-applies for the height axis.
-
 更准确的说，可以推断出以下关系式:
-
-More formally, the following relationship can be inferred:
 
 \begin{relationship}\label{rel:no_padding_no_strides}
 For any $i$ and $k$, and for $s = 1$ and $p = 0$,
@@ -554,11 +503,6 @@ For any $i$ and $k$, and for $s = 1$ and $p = 0$,
 我们来考虑一下$s = 1$时0填充对有效输入的影响:填充$p$个0把有效输入的尺寸由 $i$变为$i + 2p$。
 在该情形下，由\autoref{rel:no_padding_no_strides}可以推出以下关系式:
 
-To factor in zero padding (i.e., only restricting to $s = 1$), let's consider
-its effect on the effective input size: padding with $p$ zeros changes the
-effective input size from $i$ to $i + 2p$. In the general case,
-\autoref{rel:no_padding_no_strides} can then be used to infer the following
-relationship:
 
 \begin{relationship}\label{rel:arbitrary_padding_no_strides}
 对任意的 $i$, $k$ , $p$, 当 $s = 1$时,
@@ -575,15 +519,10 @@ relationship:
 
 在实际操作中，有两种0填充的实例由于他们的不同特性被广泛使用。我们将在下面详细讨论.
 
-In practice, two specific instances of zero padding are used quite extensively
-because of their respective properties. Let's discuss them in more detail.
-
 \subsection{Half (same) padding}
 
 输出的尺寸大小和输入相同($o = i$)是该填充方式一个比较令人期待的性质。
 
-Having the output size be the same as the input size (i.e., $o = i$) can be a
-desirable property:
 
 \begin{relationship}\label{rel:same_padding_no_strides}
 对任意的 $i$ 、 $k$($k = 2n + 1, \quad n \in \mathbb{N}$)、 $s = 1$ 和
@@ -601,13 +540,9 @@ $p = \lfloor k / 2 \rfloor = n$,
 \noindent 该填充方式有时被称为半填充。图\autoref{fig:same_padding_no_strides} 展示了
 $i = 5$, $k = 3$, $p = 1$时的情形。
 
-\noindent This is sometimes referred to as {\em half\/} (or {\em same\/})
-padding. \autoref{fig:same_padding_no_strides} provides an example for
-$i = 5$, $k = 3$ and (therefore) $p = 1$.
-
 \subsection{全填充}
 
-卷积操作通常会减小输入尺寸，但是有时我们并不想这样。在这种情况下，通过合适的0填充方式可以
+卷积操作通常会{\em 减小\/}输入尺寸，但是有时我们并不想这样。在这种情况下，通过合适的0填充方式可以
 达到我们的目的。
 
 While convolving a kernel generally {\em decreases\/} the output size with
@@ -628,40 +563,19 @@ achieved with proper zero padding:
 或者完全叠加的部分都被考虑了进去。图\autoref{fig:full_padding_no_strides}给出了
 $i = 5$，$k = 3$ ，$p = 2$时的情形。
 
-\noindent This is sometimes referred to as {\em full\/} padding, because in this
-setting every possible partial or complete superimposition of the kernel on the
-input feature map is taken into account. \autoref{fig:full_padding_no_strides}
-provides an example for $i = 5$, $k = 3$ and (therefore) $p = 2$.
-
 \section{无0填充-非单位步长}
 
 迄今为止得到的关系式只适用于单位步长的卷积。非单位步进步长的的卷积输出尺寸计算和单位步进步长的计算还是有
-很大区别的。为了便于分析，我们暂时不考虑0填充(比如 $s > 1$、$p = 0$的情况)。 
+很大区别的。为了便于分析，我们暂时不考虑0填充(即 $s > 1$、$p = 0$的情况)。 
 图\autoref{fig:no_padding_strides}展示了$i =5$, $k = 3$ , $s = 2$,$s = 2$时的情形。
-
-All relationships derived so far only apply for unit-strided convolutions.
-Incorporating non unitary strides requires another inference leap. To
-facilitate the analysis, let's momentarily ignore zero padding (i.e., $s > 1$
-and $p = 0$). \autoref{fig:no_padding_strides} provides an example for $i =
-5$, $k = 3$ and $s = 2$.
 
 在此再提一下，输出尺寸可以由卷积核在输入特征图上的可能位置数目来确定。沿输入特征图的宽度举例：卷积核从输入
 特征图的最左部分开始滑动，但是此次不同的是每次滑动的步长为$s$直到卷积核到达输入特征图最右端。输出特征图的
 尺寸同样等于卷积核滑动步数加1---考虑到卷积核最初始的位置。(\autoref{fig:no_padding_strides_explained})
 。在沿着输入特征图高度进行滑动时是同样的逻辑。
 
-Once again, the output size can be defined in terms of the number of possible
-placements of the kernel on the input. Let's consider the width axis: the
-kernel starts as usual on the leftmost part of the input, but this time it
-slides by steps of size $s$ until it touches the right side of the input. The
-size of the output is again equal to the number of steps made, plus one,
-accounting for the initial position of the kernel
-(\autoref{fig:no_padding_strides_explained}). The same logic applies for the
-height axis.
 
 基于此，可以推断出以下关系式:
-
-From this, the following relationship can be inferred:
 
 \begin{relationship}\label{rel:no_padding_strides}
 对任意的 $i$, $k$ , $s$, 以及 $p = 0$,
@@ -674,21 +588,10 @@ From this, the following relationship can be inferred:
 一些输入可能不会参与运算。
 图\autoref{fig:padding_strides_odd}展示了这一情形。
 
-
-\noindent The floor function accounts for the fact that sometimes the last
-possible step does {\em not\/} coincide with the kernel reaching the end of the
-input, i.e., some input units are left out (see
-\autoref{fig:padding_strides_odd} for an example of such a case).
-
 \section{0填充-非单位步长}
 
 最常见的情形---输入特征图进行0填充并且使用卷积步长不为单位1。为便于分析，此种情形可以认为输入的尺寸
 为$i + 2p$，此时与情景\autoref{rel:arbitrary_padding_no_strides}类似。
-
-The most general case (convolving over a zero padded input using non-unit
-strides) can be derived by applying \autoref{rel:no_padding_strides} on an
-effective input of size $i + 2p$, in analogy to what was done for
-\autoref{rel:arbitrary_padding_no_strides}:
 
 \begin{relationship}\label{rel:padding_strides}
 For any $i$, $k$, $p$ and $s$,
@@ -701,23 +604,11 @@ For any $i$, $k$, $p$ and $s$,
 $i + 2p - k$是 $s$的整数倍，那么对于任何输入尺寸$j = i + a, \quad a \in \{0,\ldots,s - 1\}$
 都会产生相同尺寸的输出。注意这种情况仅适用于$s > 1$的情形。
 
-\noindent As before, the floor function means that in some cases a convolution
-will produce the same output size for multiple input sizes. More specifically,
-if $i + 2p - k$ is a multiple of $s$, then any input size $j = i + a, \quad a
-\in \{0,\ldots,s - 1\}$ will produce the same output size. Note that this
-ambiguity applies only for $s > 1$.
 
 图\autoref{fig:padding_strides} 展示了 $i = 5$, $k = 3$, $s = 2$
 以及 $p = 1$的情形，图 \autoref{fig:padding_strides_odd} 展示了
 $i = 6$, $k = 3$, $s = 2$ 以及 $p = 1$的情形. 有趣的是，尽管输入特征图尺寸不同，但是他们的输出尺
 寸是相同的。虽然这不会影响{\em 卷积}的分析，然而这会使{\em 转置卷积}的分析变得复杂。
-
-\autoref{fig:padding_strides} shows an example with $i = 5$, $k = 3$, $s = 2$
-and $p = 1$, while \autoref{fig:padding_strides_odd} provides an example for
-$i = 6$, $k = 3$, $s = 2$ and $p = 1$. Interestingly, despite having different
-input sizes these convolutions share the same output size. While this doesn't
-affect the analysis for {\em convolutions}, this will complicate the analysis
-in the case of {\em transposed convolutions}.
 
 \begin{figure}[p]
     \centering
@@ -805,22 +696,8 @@ in the case of {\em transposed convolutions}.
 \citep{%
 boureau-cvpr-10,boureau-icml-10,boureau-iccv-11,ICML2011Saxe_551}。
 
-In a neural network, pooling layers provide invariance to small translations of
-the input. The most common kind of pooling is \emph{max pooling}, which
-consists in splitting the input in (usually non-overlapping) patches and
-outputting the maximum value of each patch. Other kinds of pooling exist, e.g.,
-mean or average pooling, which all share the same idea of aggregating the input
-locally by applying a non-linearity to the content of some patches \citep{%
-boureau-cvpr-10,boureau-icml-10,boureau-iccv-11,ICML2011Saxe_551}.
-
 一些读者可能已经意识到卷积的处理只是依赖于将一些函数重复应用于输入的子集上的假设。这意味着在前一章所
 推导出的关系式可以适用于池化算法。由于池化过程没有0填充参与，因此以上关系式的形式通常如下：
-
-Some readers may have noticed that the treatment of convolution arithmetic only
-relies on the assumption that some function is repeatedly applied onto subsets
-of the input. This means that the relationships derived in the previous chapter
-can be reused in the case of pooling arithmetic. Since pooling does not involve
-zero padding, the relationship describing the general case is as follows:
 
 \begin{relationship}\label{rel:pooling}
 对任意的 $i$, $k$ 以及 $s$,
@@ -837,31 +714,12 @@ zero padding, the relationship describing the general case is as follows:
 形状的变换，于此同时还能保证中间的连接模式和上述卷积兼容。比如，人们可能使用这样的变换作为卷积自编码的
 解码部分或者将输入特征图映射到更高的维度上去。
 
-The need for transposed convolutions generally arises from the desire to use a
-transformation going in the opposite direction of a normal convolution, i.e.,
-from something that has the shape of the output of some convolution to
-something that has the shape of its input while maintaining a connectivity
-pattern that is compatible with said convolution. For instance, one might use
-such a transformation as the decoding layer of a convolutional autoencoder or to
-project feature maps to a higher-dimensional space.
-
 再强调一遍，这种卷积情况比仅仅需要一个转置的权重矩阵的全连接的情况更加复杂。然而，由于任何卷积操作都可以
 归结为矩阵运算，因此从全连接的情况得到的一些经验在解决卷积的情况是行之有效的。
 
-Once again, the convolutional case is considerably more complex than the
-fully-connected case, which only requires to use a weight matrix whose shape
-has been transposed. However, since every convolution boils down to an
-efficient implementation of a matrix operation, the insights gained from the
-fully-connected case are useful in solving the convolutional case.
-
 与卷积算法一样，转置卷积的属性不跨轴交互的事实简化了转置卷积的讨论。
 
-Like for convolution arithmetic, the dissertation about transposed convolution
-arithmetic is simplified by the fact that transposed convolution properties
-don't interact across axes.
-
 本章节将针对以下设置展开讨论：
-The chapter will focus on the following setting:
 
 \begin{itemize}
     \item 二维转置卷积 ($N = 2$),
@@ -871,10 +729,7 @@ The chapter will focus on the following setting:
     \item 沿每个轴的0填充相同 ($p_1 = p_2 = p$).
 \end{itemize}
 
-\noindent 这里描述得到的结果同样适用于任意维度的的卷积以及非正方形参数的情形。
-
-\noindent Once again, the results outlined generalize to the N-D and non-square
-cases.
+\noindent 再强调一遍，这里描述得到的结果同样适用于任意维度的的卷积以及非正方形参数的情形。
 
 \section{卷积---作为矩阵运算}
 
@@ -882,12 +737,6 @@ cases.
 卷积可以用稀疏矩阵$\mathbf{C}$来表示，非零元素$w_{i,j}$是卷积核在相应位置的元素($i$、$j$ 分别分别代表
 卷积核行和列的索引):
 
-Take for example the convolution represented in
-\autoref{fig:no_padding_no_strides}. If the input and output were to be unrolled
-into vectors from left to right, top to bottom, the convolution could be
-represented as a sparse matrix $\mathbf{C}$ where the non-zero elements are the
-elements $w_{i,j}$ of the kernel (with $i$ and $j$ being the row and column of
-the kernel respectively):
 \begin{equation*}
 \resizebox{.98\hsize}{!}{$
     \begin{pmatrix}
@@ -905,105 +754,45 @@ the kernel respectively):
 该线性操作将输入矩阵展平为一个16维的向量，并且产生一个4维的输出，最终将该输出变为 $2
 \times 2$的输出矩阵。
 
-This linear operation takes the input matrix flattened as a 16-dimensional
-vector and produces a 4-dimensional vector that is later reshaped as the $2
-\times 2$ output matrix.
-
 采用这种表达方式，反向传递可以轻易地通过将矩阵$\mathbf{C}$转置得到，换句话说，误差可以通过与$\mathbf{C}$
 相乘来进行反向传播。该操作将一个4维输入向量作为输入，产生一个16维向量作为输出，并且它的连接模式和$\mathbf{C}$
 在结构上是兼容的。
 
-Using this representation, the backward pass is easily obtained by transposing
-$\mathbf{C}$; in other words, the error is backpropagated by multiplying the
-loss with $\mathbf{C}^T$. This operation takes a 4-dimensional vector as input
-and produces a 16-dimensional vector as output, and its connectivity pattern is
-compatible with $\mathbf{C}$ by construction.
-
 值的注意的是，卷积核$\mathbf{w}$同时定义了正向传递、反向传递所使用的矩阵$\mathbf{C}$$\mathbf{C}^T$。
-
-Notably, the kernel $\mathbf{w}$ defines both the matrices $\mathbf{C}$ and
-$\mathbf{C}^T$ used for the forward and backward passes.
 
 \section{转置卷积}
 
 现在让我们思考一下相反的工作方式都需要什么:即如何在保持图\autoref{fig:no_padding_no_strides}
 所示的连接模式时将一个4维空间映射到16维空间。该操作被称为{\em 转置卷积}。
 
-Let's now consider what would be required to go the other way around, i.e., map
-from a 4-dimensional space to a 16-dimensional space, while keeping the
-connectivity pattern of the convolution depicted in
-\autoref{fig:no_padding_no_strides}. This operation is known as a {\em
-transposed convolution}.
-
 转置卷积---同样被称作{\em 部分跨越卷积\/}或者 {\em 反卷积\/}\footnote{术语'反卷积'有时用在文献中
 ，但是反对这样，因为反卷积在数学上定义为卷积的逆，这与转置卷积是不同的。} -- 转卷积主要是通过交换卷
 积过程的前向转播以及后向传播来工作的。一种方法是注意卷积核定义了卷积，但是判断是否是直接卷积还是转置
 卷积可以通过如何计算前向以及后向传递来确定。
 
-Transposed convolutions -- also called {\em fractionally strided convolutions\/}
-or {\em deconvolutions\/}\footnote{The term ``deconvolution'' is sometimes used
-in the literature, but we advocate against it on the grounds that a
-deconvolution is mathematically defined as the inverse of a convolution, which
-is different from a transposed convolution.} -- work by swapping the forward and
-backward passes of a convolution. One way to put it is to note that the kernel
-defines a convolution, but whether it's a direct convolution or a transposed
-convolution is determined by how the forward and backward passes are computed.
 
 比如:尽管卷积核$\mathbf{w}$定义了一个前向与后向传递分别与$\mathbf{C}$、$\mathbf{C}^T$进行相乘的
 卷积运算，但是它同样也定义了一个前向与后向传递分别与$\mathbf{C}^T$、$(\mathbf{C}^T)^T = \mathbf{C}$
 进行相乘的转置卷积。\footnote{转置卷积可以认为是一些卷积对于其输入的梯度，这也是转置卷积在实际使用过程中
 常见的实现方法。}
 
-For instance, although the kernel $\mathbf{w}$ defines a convolution whose
-forward and backward passes are computed by multiplying with $\mathbf{C}$ and
-$\mathbf{C}^T$ respectively, it {\em also\/} defines a transposed convolution
-whose forward and backward passes are computed by multiplying with
-$\mathbf{C}^T$ and $(\mathbf{C}^T)^T = \mathbf{C}$ respectively.\footnote{The
-    transposed convolution operation can be thought of as the gradient of {\em
-    some\/} convolution with respect to its input, which is usually how
-    transposed convolutions are implemented in practice.}
-
-
 最后需要注意的是用直接卷积来对转置卷积进行仿真总是可行的。这样做的缺点是通常需要在输入特征图的行与列上添加
 很多0元素，这会导致很多低效率的计算。 
-
-Finally note that it is always possible to emulate a transposed convolution with
-a direct convolution. The disadvantage is that it usually involves adding many
-columns and rows of zeros to the input, resulting in a much less efficient
-implementation.
 
 在前面介绍的基础上，本章将继续做一些关于卷积算法章节的回顾，通过引用与其共享内核的直接卷积以及定义与其等效的
 直接卷积来推导每个转置卷积的性质，并定义等效的直接卷积。
 
-Building on what has been introduced so far, this chapter will proceed somewhat
-backwards with respect to the convolution arithmetic chapter, deriving the
-properties of each transposed convolution by referring to the direct
-convolution with which it shares the kernel, and defining the equivalent direct
-convolution.
-
 \section{无0填充-单位步长-转置}
 
-一种思考转置卷积在输入上操作的最简单的方式是把这个输入想象成直接卷积在某些初始化的特征图上的进行运算的结果。
+一种最简单的思考转置卷积在输入上操作的方式是把这个输入想象成直接卷积在某些初始化的特征图上的进行运算的结果。
 这样该转置卷积就可以认为是恢复这个初始化特征图\emph{尺寸}~\footnote{注意到由于转置卷积并不是逆卷积，因此
 转置卷积并不保证恢复出输入本身，转置卷积的输出是一个和原来输入具有相同宽和高的特征图。}的操作。
 
-The simplest way to think about a transposed convolution on a given input is to
-imagine such an input as being the result of a direct convolution applied on
-some initial feature map. The trasposed convolution can be then considered as
-the operation that allows to recover the \emph{shape}~\footnote{Note that the
-  transposed convolution does not guarantee to recover the input itself, as it
-  is not defined as the inverse of the convolution, but rather just returns a
-  feature map that has the same width and height.} of this initial feature map.
 
 我们考虑$3 \times 3$的卷积核在一个$4 \times 4$的特征图上进行单位步长、无0填充(即$i = 4$, $k = 3$, $s = 1$,
 $p = 0$)的卷积情形。如图\autoref{fig:no_padding_no_strides}所示，这会产生一个$2 \times 2$的输出。该卷积的
 转置卷积将会在$2 \times 2$的输入上产生一个$4 \times 4$的输出。
 
-Let's consider the convolution of a $3 \times 3$ kernel on a $4 \times 4$
-input with unitary stride and no padding (i.e., $i = 4$, $k = 3$, $s = 1$ and
-$p = 0$). As depicted in \autoref{fig:no_padding_no_strides}, this produces a
-$2 \times 2$ output. The transpose of this convolution will then have an output
-of shape $4 \times 4$ when applied on a $2 \times 2$ input.
 
 另外一种获得转置卷积输出的的方法是应用一种等效的但是效率较低的方式---直接卷积。描述的例子可以通过$3 \times 3$
 的卷积核在一个输入为$2 \times 2$进行边界0填充为$2 \times 2$、步长为单位1步长(即$i' = 2$, $k' = k$, $s' = 1$ 
@@ -1013,41 +802,15 @@ of shape $4 \times 4$ when applied on a $2 \times 2$ input.
 不会执行无用的0乘操作。}
 
 
-Another way to obtain the result of a transposed convolution is to apply an
-equivalent -- but much less efficient -- direct convolution. The example
-described so far could be tackled by convolving a $3 \times 3$ kernel over a
-$2 \times 2$ input padded with a $2 \times 2$ border of zeros using unit
-strides (i.e., $i' = 2$, $k' = k$, $s' = 1$ and $p' = 2$), as shown in
-\autoref{fig:no_padding_no_strides_transposed}. Notably, the kernel's and
-stride's sizes remain the same, but the input of the transposed convolution is
-now zero padded.\footnote{Note that although
-    equivalent to applying the transposed matrix, this visualization adds a lot
-    of zero multiplications in the form of zero padding.  This is done here for
-    illustration purposes, but it is inefficient, and software implementations
-    will normally not perform the useless zero multiplications.}
-
 一种理解0填充背后的逻辑的方式是考虑转置卷积的连接模式并用它来拿指导等效卷积的设计。比如在直接卷积操作中，
 输入的左上方像素仅仅会影响输出的左上方像素，右上方像素仅仅与输出的右上方像素有关等。
-
-One way to understand the logic behind zero padding is to consider the
-connectivity pattern of the transposed convolution and use it to guide the
-design of the equivalent convolution. For example, the top left pixel of the
-input of the direct convolution only contribute to the top left pixel of the
-output, the top right pixel is only connected to the top right output pixel,
-and so on.
 
 为了维持与等效的卷积相同的连接模式，对输入进行0填充是很有必要的，通过这种方式可以使卷积核的左上元素仅仅
 接触到左上像素点，即0填充的尺寸必须和卷积核尺寸的最小值相等。
 
-To maintain the same connectivity pattern in the equivalent convolution it is
-necessary to zero pad the input in such a way that the first (top-left)
-application of the kernel only touches the top-left pixel, i.e., the padding
-has to be equal to the size of the kernel minus one.
 
 以相同的方式进行操作，可以确定图像的其他元素会产生类似的结果，从而产生以下关系：
 
-Proceeding in the same fashion it is possible to determine similar observations
-for the other elements of the image, giving rise to the following relationship:
 
 \begin{relationship}\label{rel:no_padding_no_strides_transposed}
 由 $s = 1$, $p = 0$ 以及 $k$ 表示的卷积有一个相关联的转置卷积$k' = k$, $s' = s$ 以及
@@ -1059,29 +822,16 @@ for the other elements of the image, giving rise to the following relationship:
 
 有趣是，这对应于步长为单位1步长的全填充卷积。
 
-Interestingly, this corresponds to a fully padded convolution with unit
-strides.
 
 \section{0填充-单位步长-转置}
 
 以上可知无0填充的转置卷积等效于和一个有0填充的输入进行卷积，因此我们有理由认为带有0填充的转置
 卷积和同带有{\em 更少的 \/}0填充输入进行卷积是等价的。
 
-Knowing that the transpose of a non-padded convolution is equivalent to
-convolving a zero padded input, it would be reasonable to suppose that the
-transpose of a zero padded convolution is equivalent to convolving an input
-padded with {\em less\/} zeros.
-
 实际情况确实是如此，如图\autoref{fig:arbitrary_padding_no_strides_transposed} 所示，
 此时$i = 5$, $k = 4$ ，$p = 2$。
 
-It is indeed the case, as shown in
-\autoref{fig:arbitrary_padding_no_strides_transposed} for $i = 5$, $k = 4$ and
-$p = 2$.
-
 通常来说，以下关系式适用于带有0填充卷积:
-Formally, the following relationship applies for zero padded convolutions:
-
 
 \begin{relationship}\label{rel:arbitrary_padding_no_strides_transposed}
 由 $s = 1$, $k$ 以及 $p$ 所表示的卷积有一个相关联的转置卷积 $k' = k$, $s' = s$ 以及 $p' = k -
@@ -1139,11 +889,6 @@ p - 1$ ，并且该转置卷积的输出为:
 通过应用于前面所述的一样的归纳推理，我们有理由认为半填充转置卷积的等效卷积本身是半填充卷积，假设半
 填充卷积的输出尺寸和输入尺寸相同。因此以下关系式成立:
 
-By applying the same inductive reasoning as before, it is reasonable to expect
-that the equivalent convolution of the transpose of a half padded convolution
-is itself a half padded convolution, given that the output size of a half
-padded convolution is the same as its input size. Thus the following relation
-applies:
 
 \begin{relationship}\label{rel:half_padding_no_strides_transposed}
 由 $k = 2n + 1, \quad n \in \mathbb{N}$, $s = 1$ 以及 $p
@@ -1166,10 +911,6 @@ applies:
 知道了无填充转置卷积的等效卷积涉及全填充的前提下，针对于我们来说就不意外了:全填充转置卷积的等效卷积
 是一个无填充卷积。
 
-Knowing that the equivalent convolution of the transpose of a non-padded
-convolution involves full padding, it is unsurprising that the equivalent of
-the transpose of a fully padded convolution is a non-padded convolution:
-
 \begin{relationship}\label{rel:full_padding_no_strides_transposed}
 由 $s = 1$, $k$ 以及 $p = k - 1$所表示的卷积有一个相关联的转置卷积$k' = k$, $s' = s$ 以及 $p' = 0$
 ，该转置卷积的输出尺寸为:
@@ -1181,39 +922,21 @@ the transpose of a fully padded convolution is a non-padded convolution:
 \end{equation*}
 \end{relationship}
 
-\autoref{fig:full_padding_no_strides_transposed} provides an example for $i =
-5$, $k = 3$ and (therefore) $p = 2$.
+图\autoref{fig:full_padding_no_strides_transposed}提供了$i = 5$, $k = 3$ 以及 $p = 2$的例子。
 
 \section{无填充-非单位步长-转置}
 
 根据0填充卷积同样的逻辑进行推理，人们可能会认为$s > 1$的转置卷积和$s < 1$的等效卷积有关联。接下来
 将会解释这是合理的，这也是为何转置卷积也被成为{\em 部分跨越卷积}的原因。
 
-Using the same kind of inductive logic as for zero padded convolutions, one
-might expect that the transpose of a convolution with $s > 1$ involves an
-equivalent convolution with $s < 1$. As will be explained, this is a valid
-intuition, which is why transposed convolutions are sometimes called {\em
-fractionally strided convolutions}.
 
 图 \autoref{fig:no_padding_strides_transposed}展示了$i = 5$, $k= 3$ 以及 $s = 2$的例子，这将会
 帮助我们理解部分跨越所涉及的内容:0被插入到输入单元{\em 之间\/}，与单位步长相比，这使得卷积核的移动
 速度变慢。\footnote{这样做是低效的而且在真正应用中的实现是避免无用的乘0操作的，但是从概念上讲这是理解
 跨步卷积的一种方式。}
 
-\autoref{fig:no_padding_strides_transposed} provides an example for $i = 5$, $k
-= 3$ and $s = 2$ which helps understand what fractional strides involve: zeros
-are inserted {\em between\/} input units, which makes the kernel move around at
-a slower pace than with unit strides.\footnote{Doing so is inefficient and
-    real-world implementations avoid useless multiplications by zero, but
-    conceptually it is how the transpose of a strided convolution can be
-    thought of.}
-
 此时，我们假设卷积是无0填充的($p = 0$)并且它的输入尺寸$i$满足$i - k$是$s$的整数倍的条件。在这种情
 况下，以下关系式成立:
-
-For the moment, it will be assumed that the convolution is non-padded ($p = 0$)
-and that its input size $i$ is such that $i - k$ is a multiple of $s$. In that
-case, the following relationship holds:
 
 \begin{relationship}\label{rel:no_padding_strides_transposed}
 由 $p = 0$, $k$ 及 $s$ 所表示以及其输入尺寸$i - k$是$s$的整数倍的卷积有一个相关联的转置卷积
@@ -1276,12 +999,6 @@ $s - 1$个0之后拉伸得到的尺寸，该装置卷积的输出为：
 图\autoref{rel:arbitrary_padding_no_strides_transposed} 以及
 图\autoref{rel:no_padding_strides_transposed}的扩展为零填充的情形:
 
-When the convolution's input size $i$ is such that $i + 2p - k$ is a multiple
-of $s$, the analysis can extended to the zero padded case by combining
-\autoref{rel:arbitrary_padding_no_strides_transposed} and
-\autoref{rel:no_padding_strides_transposed}:
-
-
 \begin{relationship}\label{rel:padding_strides_transposed}
 A由$k$, $s$ 以及 $p$ 所表示的以及输入尺寸为$i$并且$i + 2p - k$ 是 $s$整数倍的卷积有一个相关联的转置
 卷积 $\tilde{i}'$, $k' = k$, $s' = 1$ 以及
@@ -1294,16 +1011,11 @@ $s - 1$个0之后拉伸得到的尺寸，该装置卷积的输出为：
 \end{equation*}
 \end{relationship}
 
-\autoref{fig:padding_strides_transposed} provides an example for $i = 5$, $k =
-3$, $s = 2$ and $p = 1$.
+图\autoref{fig:padding_strides_transposed}展示了$i = 5$, $k = 3$, $s = 2$ 以及 $p = 1$的例子。
+
 
 输入尺寸的限制$i$可以通过引入另外一个参数$a \in \{0, \ldots, s - 1\}$来进行放宽，该参数允许区分所有导致相同
 $i'$但是$s$不同的情况。
-
-The constraint on the size of the input $i$ can be relaxed by introducing
-another parameter $a \in \{0, \ldots, s - 1\}$ that allows to distinguish
-between the $s$ different cases that all lead to the same $i'$:
-
 
 
 \begin{relationship}\label{rel:padding_strides_transposed_odd}
@@ -1317,6 +1029,8 @@ $s - 1$个0之后拉伸得到的尺寸, $a = (i + 2p - k) \mod s$ 表示在底�
 \end{split}
 \end{equation*}
 \end{relationship}
+
+图\autoref{fig:padding_strides_odd_transposed}展示了$i = 6$, $k= 3$, $s = 2$ 以及 $p = 1$的例子。
 
 \autoref{fig:padding_strides_odd_transposed} provides an example for $i = 6$, $k
 = 3$, $s = 2$ and $p = 1$.
@@ -1347,49 +1061,23 @@ $s - 1$个0之后拉伸得到的尺寸, $a = (i + 2p - k) \mod s$ 表示在底�
 理解。为了有一个更深刻的描述以及理解空洞卷积应用在什么场景下，可以参考论文
 \citet{chen2014semantic,yu2015multi}。
 
-Readers familiar with the deep learning literature may have noticed the term
-``dilated convolutions'' (or ``atrous convolutions'', from the French expression
-{\em convolutions \`{a} trous}) appear in recent papers. Here we attempt to
-provide an intuitive understanding of dilated convolutions. For a more in-depth
-description and to understand in what contexts they are applied, see
-\citet{chen2014semantic,yu2015multi}.
-
 空洞卷积通过在卷积核元素之间插入空元素来使卷积核 ``膨胀`` 。扩张率由额外的超参数$d$控制。空洞卷积的实现方式可
 能是多种多样的，但是通常有$d - 1$个空元素插入到卷积核元素之间，当$d = 1$时表示的就是常规卷积。
-
-Dilated convolutions ``inflate'' the kernel by inserting spaces between the
-kernel elements. The dilation ``rate'' is controlled by an additional
-hyperparameter $d$. Implementations may vary, but there are usually $d - 1$
-spaces inserted between kernel elements such that $d = 1$ corresponds to a
-regular convolution.
 
 空洞卷积被用来增加输出单元的感受野，由于没有增加卷积核尺寸，这种方式的代价是非常低的，而且将多个空洞卷积堆叠
 起来是非常有效的。具体的例子可以参阅\citet{oord2016wavenet}，在这篇论文中，作者提出WaveNet模型实现了一个
 自回归生成模型，在该模型中，原音频在过去音频帧的大背景下使用空洞卷积来调剂新的音频帧。
 
-Dilated convolutions are used to cheaply increase the receptive field of output
-units without increasing the kernel size, which is especially effective
-when multiple dilated convolutions are stacked one after another. For a
-concrete example, see \citet{oord2016wavenet}, in which the proposed WaveNet
-model implements an autoregressive generative model for raw audio which uses
-dilated convolutions to condition new audio frames on a large context of past
-audio frames.
 
 思考扩展率$d$在有效卷积核尺寸上的影响有助于我们了解$d$与输出尺寸$o$之间的关系。尺寸为$k$的卷积核在参数$d$下进行
 扩张后的有效尺寸为：
 
-To understand the relationship tying the dilation rate $d$ and the output size
-$o$, it is useful to think of the impact of $d$ on the {\em effective kernel
-size}. A kernel of size $k$ dilated by a factor $d$ has an effective size
 \begin{equation*}
     \hat{k} = k + (k - 1)(d - 1).
 \end{equation*}
 
 可以与\autoref{rel:padding_strides}结合使用来形成以下关于空洞卷积的关系式:
-
-This can be combined with \autoref{rel:padding_strides} to form the following
-relationship for dilated convolutions:
-
+ 
 \begin{relationship}\label{rel:dilation}
 For any $i$, $k$, $p$ and $s$, and for a dilation rate $d$,
 \begin{equation*}
