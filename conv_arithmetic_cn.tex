@@ -190,8 +190,7 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
     \includegraphics[width=0.32\textwidth]{pdf/numerical_no_padding_no_strides_06.pdf}
     \includegraphics[width=0.32\textwidth]{pdf/numerical_no_padding_no_strides_07.pdf}
     \includegraphics[width=0.32\textwidth]{pdf/numerical_no_padding_no_strides_08.pdf}
-    \caption{\label{fig:numerical_no_padding_no_strides} Computing the output
-        values of a discrete convolution.}
+    \caption{\label{fig:numerical_no_padding_no_strides}计算离散卷积的输出值。}
 \end{figure}
 
 \begin{figure}[p]
@@ -205,9 +204,8 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
     \includegraphics[width=0.32\textwidth]{pdf/numerical_padding_strides_06.pdf}
     \includegraphics[width=0.32\textwidth]{pdf/numerical_padding_strides_07.pdf}
     \includegraphics[width=0.32\textwidth]{pdf/numerical_padding_strides_08.pdf}
-    \caption{\label{fig:numerical_padding_strides} Computing the output values
-        of a discrete convolution for $N = 2$, $i_1 = i_2 = 5$, $k_1 = k_2 = 3$,
-        $s_1 = s_2 = 2$, and $p_1 = p_2 = 1$.}
+    \caption{\label{fig:numerical_padding_strides} 计算参数为 $N = 2$, $i_1 = i_2 = 5$, $k_1 = k_2 = 3$,
+        $s_1 = s_2 = 2$, 以及 $p_1 = p_2 = 1$时的离散卷积输出值。}
 \end{figure}
 
 如果输入多个特征图，则卷积核的数目必须是3维的。类似的，每个特征图都会与不同的卷积核分别进行
@@ -230,23 +228,12 @@ Tensorflow \citep{abaditensorflow} and Caffe \citep{jia2014caffe}等。
 
 以下参数影响卷积层在 $j$ 轴的输出尺寸:
 
-The following properties affect the output size $o_j$ of a convolutional layer
-along axis $j$:
 
 \begin{itemize}
     \item $i_j$: 沿 $j$ 轴的输入尺寸,
     \item $k_j$: 沿 $j$ 轴的卷积核尺寸,
     \item $s_j$: 沿 $j$ 轴的步长(内核在特征图上每次进行滑动的距离),
     \item $p_j$: 沿 $j$轴的0填充(在某一维上从开始到结束时填充0)数目.
-\end{itemize}
-
-\begin{itemize}
-    \item $i_j$: input size along axis $j$,
-    \item $k_j$: kernel size along axis $j$,
-    \item $s_j$: stride (distance between two consecutive positions of the
-        kernel) along axis $j$,
-    \item $p_j$: zero padding (number of zeros concatenated at the beginning and
-        at the end of an axis) along axis $j$.
 \end{itemize}
 
 \noindent例图\autoref{fig:numerical_padding_strides} 展现了一个 $3
@@ -360,10 +347,8 @@ along axis $j$:
         \draw[draw=base03, ->, thick] (17.25, 2.5) to (18.75, 2.5);
         \draw[draw=base03, ->, thick] (22.25, 2.5) to (23.75, 2.5);
     \end{tikzpicture}
-    \caption{\label{fig:strides_subsampling} An alternative way of viewing
-        strides. Instead of translating the $3 \times 3$ kernel by increments of
-        $s = 2$ (left), the kernel is translated by increments of $1$ and only
-        one in $s = 2$ output elements is retained (right).}
+    \caption{\label{fig:strides_subsampling} 另外一种审视步长的角度:不再用将$3 \times 3$卷积核解读为滑动
+    增量为2$s = 2$ (左图)，而是将其解读为滑动增量为1但是只保存$s = 2$时的元素输出(右图)。}
 \end{figure}
 
 \section{池化}
@@ -412,9 +397,8 @@ along axis $j$:
     \includegraphics[width=0.32\textwidth]{pdf/numerical_max_pooling_06.pdf}
     \includegraphics[width=0.32\textwidth]{pdf/numerical_max_pooling_07.pdf}
     \includegraphics[width=0.32\textwidth]{pdf/numerical_max_pooling_08.pdf}
-    \caption{\label{fig:numerical_max_pooling} Computing the output values of a
-        $3 \times 3$ max pooling operation on a $5 \times 5$ input using $1
-        \times 1$ strides.}
+    \caption{\label{fig:numerical_max_pooling}在$5 \times 5$的输入特征图上进行$3 \times 3$且步长为
+    $1 \times 1$最大值池化操作。}
 \end{figure}
 
 \chapter{卷积算法}
@@ -459,9 +443,10 @@ For any $i$ and $k$, and for $s = 1$ and $p = 0$,
     \includegraphics[width=0.24\textwidth]{pdf/no_padding_no_strides_01.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/no_padding_no_strides_02.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/no_padding_no_strides_03.pdf}
-    \caption{\label{fig:no_padding_no_strides} (No padding, unit strides)
-        Convolving a $3 \times 3$ kernel over a $4 \times 4$ input using unit
-        strides (i.e., $i = 4$, $k = 3$, $s = 1$ and $p = 0$).}
+    \caption{\label{fig:no_padding_no_strides} (无0填充-单位步长)
+        $3 \times 3$的卷积核在$4 \times 4$的输入特征图上以单位步长进行卷积(即$i = 4$, $k = 3$, 
+        $s = 1$ 以及 $p = 0$)。
+        }
 \end{figure}
 
 \begin{figure}[p]
@@ -470,10 +455,10 @@ For any $i$ and $k$, and for $s = 1$ and $p = 0$,
     \includegraphics[width=0.24\textwidth]{pdf/arbitrary_padding_no_strides_01.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/arbitrary_padding_no_strides_02.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/arbitrary_padding_no_strides_03.pdf}
-    \caption{\label{fig:arbitrary_padding_no_strides} (Arbitrary padding, unit
-        strides) Convolving a $4 \times 4$ kernel over a $5 \times 5$ input
-        padded with a $2 \times 2$ border of zeros using unit strides (i.e.,
-        $i = 5$, $k = 4$, $s = 1$ and $p = 2$).}
+    \caption{\label{fig:arbitrary_padding_no_strides} (任意填充-单位步长)
+        $4 \times 4$的卷积核以单位步长在$2 \times 2$0填充的$5 \times 5$的输入特征图上进行卷积。
+        (即$i = 5$, $k = 4$, $s = 1$ 以及 $p = 2$)。
+        }
 \end{figure}
 
 \begin{figure}[p]
@@ -482,9 +467,10 @@ For any $i$ and $k$, and for $s = 1$ and $p = 0$,
     \includegraphics[width=0.24\textwidth]{pdf/same_padding_no_strides_01.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/same_padding_no_strides_02.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/same_padding_no_strides_03.pdf}
-    \caption{\label{fig:same_padding_no_strides} (Half padding, unit strides)
-        Convolving a $3 \times 3$ kernel over a $5 \times 5$ input using half
-        padding and unit strides (i.e., $i = 5$, $k = 3$, $s = 1$ and $p = 1$).}
+    \caption{\label{fig:same_padding_no_strides} (半填充-单位步长)
+        $3 \times 3$的卷积核以单位步长在半填充的$5 \times 5$的输入特征图上进行卷积。
+        (即$i = 5$, $k = 3$, $s = 1$ 以及 $p = 1$)。
+    }
 \end{figure}
 
 \begin{figure}[p]
@@ -493,7 +479,7 @@ For any $i$ and $k$, and for $s = 1$ and $p = 0$,
     \includegraphics[width=0.24\textwidth]{pdf/full_padding_no_strides_01.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/full_padding_no_strides_02.pdf}
     \includegraphics[width=0.24\textwidth]{pdf/full_padding_no_strides_03.pdf}
-    \caption{\label{fig:full_padding_no_strides} (Full padding, unit strides)
+    \caption{\label{fig:full_padding_no_strides} (全填充-单位步长)
         Convolving a $3 \times 3$ kernel over a $5 \times 5$ input using full
         padding and unit strides (i.e., $i = 5$, $k = 3$, $s = 1$ and $p = 2$).}
 \end{figure}
